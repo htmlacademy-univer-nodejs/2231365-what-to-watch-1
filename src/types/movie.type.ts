@@ -1,7 +1,7 @@
 import {User} from './user.type';
-import {Genre} from './film-genre.enum';
+import {Genre} from './movie-genre.enum';
 
-export type Film = {
+export type Movie = {
   name: string;
   description: string;
   publicationDate: Date;
