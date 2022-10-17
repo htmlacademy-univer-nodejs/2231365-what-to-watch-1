@@ -22,7 +22,8 @@ export default class ImportCommand implements CliCommandInterface {
     try {
       await fileReader.read();
     } catch (err) {
-      console.log(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(err)}"`);
+      const error = typeof err === 'string' ? err : '';
+      console.log(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(error)}"`);
     }
 
   }

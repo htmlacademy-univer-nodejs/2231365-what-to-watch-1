@@ -1,7 +1,7 @@
-import {Movie} from '../types/movie.type.js';
 import {Genre} from '../types/movie-genre.enum.js';
+import {Movie} from '../types/movie.type';
 
-export const createMovie = (row: string) => {
+export const createMovie = (row: string): Movie => {
   const tokens = row.replace('\n', '').split('\t');
   const [name,
     description,
@@ -21,13 +21,20 @@ export const createMovie = (row: string) => {
     password,
     poster,
     backgroundImage,
-    backgroundColor] = tokens;
+    backgroundColor
+  ] = tokens;
 
   return {
     name: name,
     description: description,
     publicationDate: new Date(publicationDate),
-    genre: genre.split(';').map((g) => <Genre>g),
+    genre: genre.split(';').map((g) => {
+      if (g in Object.keys(Genre)) {
+        return g as Genre;
+      } else {
+        throw new Error('Такого жанра не существует.');
+      }
+    }),
     releaseYear: parseInt(releaseYear, 10),
     rating: parseFloat(rating),
     preview: preview,
@@ -40,8 +47,8 @@ export const createMovie = (row: string) => {
     poster: poster,
     backgroundImage: backgroundImage,
     backgroundColor: backgroundColor,
-  } as Movie;
+  };
 };
 
-export const getErrorMessage = (error: unknown): string =>
+export const getErrorMessage = (error: Error | string): string =>
   error instanceof Error ? error.message : '';

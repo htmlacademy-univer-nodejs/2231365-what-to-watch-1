@@ -1,4 +1,4 @@
-const alphabet: { [key: string]: string } = {
+const alphabet: Record<string, string> = {
   'а': 'a',
   'б': 'b',
   'в': 'v',
@@ -39,10 +39,10 @@ export function transletirate(word: string): string {
   let answer = '';
   word = word.toLowerCase();
   for (const letter of word) {
-    if (!alphabet[letter]) {
-      answer += letter;
-    } else {
+    if (letter in alphabet) {
       answer += alphabet[letter];
+    } else {
+      answer += letter;
     }
   }
   return answer;
