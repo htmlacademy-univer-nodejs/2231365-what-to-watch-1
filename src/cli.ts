@@ -5,6 +5,7 @@ import HelpCommand from './cli-command/help-command.js';
 import CliApplication from './app/cli-application.js';
 import ImportCommand from './cli-command/import-command.js';
 import GenerateCommand from './cli-command/generate-command.js';
+import 'reflect-metadata';
 
 const manager = new CliApplication();
 manager.registerCommands([
