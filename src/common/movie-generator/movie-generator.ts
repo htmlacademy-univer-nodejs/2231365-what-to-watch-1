@@ -5,7 +5,6 @@ import {
   getRandomItem,
   getRandomItems,
   generateRandomDate,
-  generateRandomPassword,
   generateRandomColor
 } from '../../utils/random.js';
 import {Genre} from '../../types/movie-genre.enum.js';
@@ -30,10 +29,9 @@ export default class MovieGenerator implements MovieGeneratorInterface {
     const commentsCount = generateRandomValue(0, 100);
     const username = getRandomItem<string>(this.mockData.users.usernames);
     const email = getRandomItem<string>(this.mockData.users.emails);
-    const password = generateRandomPassword();
-    const avatar = `${username}.png`;
-    const poster = `${traslitName}-poster.png`;
-    const backgroundImage = `${traslitName}-background.png`;
+    const avatar = `${username}.jpg`;
+    const poster = `${traslitName}-poster.jpg`;
+    const backgroundImage = `${traslitName}-background.jpg`;
     const backgroundColor = generateRandomColor();
 
     return [
@@ -52,7 +50,6 @@ export default class MovieGenerator implements MovieGeneratorInterface {
       username,
       email,
       avatar,
-      password,
       poster,
       backgroundImage,
       backgroundColor
