@@ -58,6 +58,13 @@ export const createSHA256 = (line: string, salt: string): string => {
   return shaHasher.update(line).digest('hex');
 };
 
+export const checkPassword = (password: string): void =>
+{
+  if (password.length < 6 || password.length > 12) {
+    throw new Error('Password must be from 6 to 12 characters.');
+  }
+};
+
 function isValidGenre(genre: string): boolean {
   const options: string[] = Object.values(Genre);
   return options.includes(genre);

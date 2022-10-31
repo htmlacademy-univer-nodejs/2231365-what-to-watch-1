@@ -1,6 +1,6 @@
 import {User} from '../../types/user.type.js';
 import typegoose, {getModelForClass, defaultClasses} from '@typegoose/typegoose';
-import {createSHA256} from '../../utils/common.js';
+import {checkPassword, createSHA256} from '../../utils/common.js';
 
 const {prop, modelOptions} = typegoose;
 
@@ -33,9 +33,7 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   private password!: string;
 
   public setPassword(password: string, salt: string) {
-    if (password.length < 6 || password.length > 12) {
-      throw new Error('Password must be from 6 to 12 characters.');
-    }
+    checkPassword(password);
     this.password = createSHA256(password, salt);
   }
 

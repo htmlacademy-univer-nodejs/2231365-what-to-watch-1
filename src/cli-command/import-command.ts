@@ -22,7 +22,7 @@ export default class ImportCommand implements CliCommandInterface {
   private userService!: UserServiceInterface;
   private movieService!: MovieServiceInterface;
   private databaseService!: DatabaseInterface;
-  private logger: LoggerInterface;
+  private readonly logger: LoggerInterface;
   private salt!: string;
 
   constructor() {
@@ -47,18 +47,19 @@ export default class ImportCommand implements CliCommandInterface {
     });
   }
 
-  private async onLine(line: string, resolve: () => void) {
+  private async onLine(line: string, resolve: VoidFunction) {
     const offer = createMovie(line);
     await this.saveMovie(offer);
     resolve();
   }
 
   private onComplete(count: number) {
-    console.log(`${count} строк успешно имортированы.`);
+    this.logger.info(`${count} строк успешно имортированы.`);
     this.databaseService.disconnect();
   }
 
-  public async execute(filename: string, login: string, password: string, host: string, dbname: string, salt: string): Promise<void> {
+  public async execute(...parameters:string[]): Promise<void> {
+    const [login, password, host, dbname, salt, filename] = parameters;
     const uri = getURI(login, password, host, DEFAULT_DB_PORT, dbname);
     this.salt = salt;
 
@@ -71,7 +72,7 @@ export default class ImportCommand implements CliCommandInterface {
       await fileReader.read();
     } catch (err) {
       const error = typeof err === 'string' ? err : '';
-      console.log(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(error)}"`);
+      this.logger.error(`Не удалось импортировать данные из файла по причине: "${getErrorMessage(error)}"`);
     }
   }
 }

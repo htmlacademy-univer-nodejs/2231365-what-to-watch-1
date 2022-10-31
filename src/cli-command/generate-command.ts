@@ -3,10 +3,17 @@ import {MockData} from '../types/mock-data.type.js';
 import {CliCommandInterface} from './cli-command.interface.js';
 import MovieGenerator from '../common/movie-generator/movie-generator.js';
 import TSVFileWriter from '../common/file-writer/tsv-file-writer.js';
+import {LoggerInterface} from '../common/logger/logger.interface';
+import ConsoleLoggerService from '../common/logger/console-logger.service';
 
 export default class GenerateCommand implements CliCommandInterface {
+  private readonly logger: LoggerInterface;
   public readonly name = '--generate';
   private initialData!: MockData;
+
+  constructor() {
+    this.logger = new ConsoleLoggerService();
+  }
 
   public async execute(...parameters:string[]): Promise<void> {
     const [count, filepath, url] = parameters;
@@ -15,7 +22,8 @@ export default class GenerateCommand implements CliCommandInterface {
     try {
       this.initialData = await got.get(url).json();
     } catch {
-      return console.log(`Не удалось получить данные с ${url}`);
+      this.logger.error(`Не удалось получить данные с ${url}`);
+      return;
     }
 
     const movieGeneratorString = new MovieGenerator(this.initialData);
@@ -25,6 +33,6 @@ export default class GenerateCommand implements CliCommandInterface {
       await tsvFileWriter.write(movieGeneratorString.generate());
     }
 
-    console.log(`Файл ${filepath} был успешно создан!`);
+    this.logger.info(`Файл ${filepath} был успешно создан!`);
   }
 }
