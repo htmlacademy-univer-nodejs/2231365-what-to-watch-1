@@ -10,7 +10,7 @@ export default class CreateMovieDto {
   public preview!: string;
   public video!: string;
   public actors!: string[];
-  public producer!: string[];
+  public producer!: string;
   public duration!: number;
   public commentsCount!: number;
   public userId!: string;
