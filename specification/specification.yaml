@@ -1,0 +1,637 @@
+openapi: 3.1.0
+info:
+    title: API сервер для проекта "Что посмотреть?".
+    description: Список ресурсов и маршрутов сервиса "Что посмотреть?".
+    license:
+        name: MIT
+        url: https://opensource.org/licenses/MIT
+    version: 1.0.0
+servers:
+    -   url: https://api.server.test/v1
+tags:
+    -   name: users
+        description: Действия с пользователями.
+    -   name: movies
+        description: Действия с фильмами.
+    -   name: comments
+        description: Действия с комментариями.
+paths:
+    /users/register:
+        post:
+            tags:
+                - users
+            summary: Регистрация пользователя.
+            description: Регистрирует нового пользователя.
+            requestBody:
+                description: Информация для создания нового пользователя.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/createUser'
+                required: true
+
+            responses:
+                "201":
+                    description: Пользователь зарегистрирован. Объект пользователя.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/user'
+
+                "409":
+                    description: Пользователь с таким email уже существует.
+
+    /users/login:
+        post:
+            tags:
+                - users
+            summary: Вход в аккаунт и доступ к закрытой части приложения.
+            description: Авторизует пользователя на основе логина и пароля.
+            requestBody:
+                description: Информация для авторизации пользователя.
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            properties:
+                                email:
+                                    type: string
+                                    format: email
+                                    example: niripsa@gmail.com
+                                password:
+                                    type: string
+                                    example: 123456
+                required: true
+
+            responses:
+                "200":
+                    description: Авторизация прошла успешно. Токен для пользователя создан (SESSIONID). Передается в заголовках.
+                    headers:
+                        Set-Cookie:
+                            schema:
+                                type: string
+                                example: SESSIONID=some1session2id3; Path=/; HttpOnly
+                "403":
+                    description: Неправильный логин или пароль.
+
+        get:
+            tags:
+                - users
+            summary: Проверка состояния пользователя.
+            description: Возвращает информацию по авторизованному пользователю.
+            parameters:
+                -   in: cookie
+                    name: SESSIONID
+                    required: true
+                    schema:
+                        type: string
+
+            responses:
+                "200":
+                    description: Информация о пользователе успешно получена.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/user'
+
+    /users/{userId}/avatar:
+        post:
+            tags:
+                - users
+            summary: Загрузка аватара пользователя.
+            description: Загружает иозображение аватара пользователя. Изображение аватара
+                должно быть в формате .jpg или .png.
+
+            responses:
+                "201":
+                    description: Аватар успешно загружен.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    avatarPath:
+                                        type: string
+                                        format: url
+                                        example: https://www.what-to-watch.com/avatars/niripsa
+                "409":
+                    description: Ошибка, аватар не загружен. Проверьте расширение файла.
+
+    /users/logout:
+        delete:
+            tags:
+                - users
+            summary: Деавторизация пользователя.
+            description: Завершение пользовательской сессии.
+            parameters:
+                -   in: cookie
+                    name: SESSIONID
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                "204":
+                    description: Сессия пользователя успешно завершена.
+                "403":
+                    description: Неверный токен. Деавторизация не завершилась.
+
+    /comments/addComment:
+        post:
+            tags:
+                - comments
+            summary: Добавление комментария.
+            description: Добавляет новый комментарий к фильму.
+            requestBody:
+                description: Информация для создания комментария.
+                content:
+                    application/json:
+                        schema:
+                            allOf:
+                                -   $ref: '#/components/schemas/comment'
+                                -   $ref: '#/components/schemas/id'
+                                    required: true
+            responses:
+                "200":
+                    description: Комментарий успешно добавлен.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/comment'
+                "400":
+                    description: Запрос не обработан. Проверьте корректность данных.
+                "401":
+                    description: Комментарии могут оставлять только авторизованные пользователи.
+                "404":
+                    description: Неверный идентификатор фильма.
+
+    /movies/create:
+        post:
+            tags:
+                - movies
+            summary: Создание нового фильма.
+            description: Создает новый фильм.
+            requestBody:
+                description: Информация для создания нового фильма.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/createMovie'
+            responses:
+                "201":
+                    description: Фильм создан. Объект фильма.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/movie'
+                "400":
+                    description: Запрос не обработан. Проверьте корректность данных.
+                "401":
+                    description: Фильмы могут добавлять только авторизованные пользователи.
+
+    /movies/{movieId}:
+        get:
+            tags:
+                - movies
+            summary: Получение информации по фильму.
+            description: Получает детальную информацию по фильму.
+            parameters:
+                -   in: path
+                    name: movieId
+                    schema:
+                        $ref: '#/components/schemas/id'
+                    required: true
+            responses:
+                "200":
+                    description: Информация по фильму успешно получена.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/movie'
+                "404":
+                    description: Фильма с данным идентификатором не существует.
+
+        patch:
+            tags:
+                - movies
+            summary: Редактирование фильма.
+            description: Редактирует информацию о фильме.
+            parameters:
+                -   in: path
+                    name: movieId
+                    schema:
+                        $ref: '#/components/schemas/id'
+                    required: true
+
+            requestBody:
+                description: Информации о фильме для редактирования.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/createMovie'
+                required: true
+            responses:
+                "200":
+                    description: Информация о фильме обновлена. Новый объект фильма.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/movie'
+                "400":
+                    description: Запрос не обработан. Проверьте корректность данных.
+                "401":
+                    description: Фильмы могут редактировать только авторизованные пользователи.
+                "403":
+                    description: Редактировать фильм может только тот пользователь, который его создал.
+                "404":
+                    description: Фильма с данным идентификатором не существует.
+
+        delete:
+            tags:
+                - movies
+            summary: Удаление фильма.
+            description: Удаляет фильм.
+            parameters:
+                -   in: path
+                    name: movieId
+                    schema:
+                        $ref: '#/components/schemas/id'
+                    required: true
+            requestBody:
+                description: Идентификатор пользователя, который хочет удалить фильм.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/id'
+            responses:
+                "204":
+                    description: Фильм успешно удален.
+                "401":
+                    description: Фильмы могут удалять только авторизованные пользователи.
+                "403":
+                    description: Удалить фильм может только тот пользователь, который его создал.
+                "404":
+                    description: Фильма с данным идентификатором не существует.
+
+    /movies?limit=60&genre=drama:
+        get:
+            tags:
+                - movies
+            summary: Получение списка фильмов.
+            description: Получает список фильмов (ограничение - 60 штук по умолчанию).
+            parameters:
+                -   in: query
+                    name: limit
+                    schema:
+                        type: integer
+                        example: 10
+                -   in: query
+                    name: genre
+                    schema:
+                        $ref: '#/components/schemas/genre'
+            responses:
+                "200":
+                    description: Список фильмов успешно получен.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/movieListItem'
+                "400":
+                    description: Запрос не обработан. Проверьте корректность данных.
+
+    /movies/promo:
+        get:
+            tags:
+                - movies
+            summary: Получение промо-фильма
+            description: Получает информации по промо-фильму.
+            responses:
+                "200":
+                    description: Информация по промо-фильму успешно получена.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/movie'
+
+    /movies/inList:
+        get:
+            tags:
+                - movies
+            summary: Получение фильмов, добавленных в "Мой лист".
+            description: Получает список фильмов, добавленных в "Мой лист".
+            requestBody:
+                description: Идентификатор пользователя, который хочет посмотреть список фильмов в "Мой лист".
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/id'
+                            required: true
+            responses:
+                "200":
+                    description: Фильмы из списка "Мой лист" успешно получены.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/movieListItem'
+                "401":
+                    description: Получить список фильмов из "Мой лист" могут только авторизованные пользователи.
+
+        post:
+            tags:
+                - movies
+            summary: Добавление фильма в "Мой лист"
+            description: Добавляет фильм в список "Мой лист"
+            requestBody:
+                description: Идентификатор пользователя, который хочет добавит фильм в список "Мой лист" + идентификатор фильма.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/movieAndUser'
+            responses:
+                "201":
+                    description: Фильм успешно добавлен в список "Мой лист".
+                "401":
+                    description: Добавить фильм в список "Мой лист" могут только авторизованные пользователи.
+
+        delete:
+            tags:
+                - movies
+            summary: Удаление фильма из "Мой лист".
+            description: Удаляет фильм из списка "Мой лист".
+            requestBody:
+                description: Идентификатор пользователя, который хочет удалить фильм из списка "Мой лист" + идентификатор фильма.
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/movieAndUser'
+            responses:
+                "204":
+                    description: Фильм успешно удален из списка "Мой лист".
+                "401":
+                    description: Удалить фильм из списка "Мой лист" могут только авторизованные пользователи.
+
+    /movies/{movieId}/comments:
+        get:
+            tags:
+                - comments
+            summary: Получение комментариев для фильма.
+            description: Получает список комментариев для фильма.
+            parameters:
+                -   in: path
+                    name: movieId
+                    schema:
+                        $ref: '#/components/schemas/id'
+                    required: true
+            responses:
+                "200":
+                    description: Список комментариев к фильму успешно получен.
+                    content:
+                        application/json:
+                            schema:
+                                type: array
+                                items:
+                                    $ref: '#/components/schemas/comment'
+                "404":
+                    description: Фильма с данным идентификатором не существует.
+
+components:
+    schemas:
+        id:
+            type: string
+            format: uuid
+            example: 6329c3d6a04ab1061c6425ea
+
+        movieAndUser:
+            type: object
+            properties:
+                userId:
+                    $ref: '#/components/schemas/id'
+                movieId:
+                    $ref: '#/components/schemas/id'
+            required: true
+
+
+        createUser:
+            type: object
+            properties:
+                username:
+                    type: string
+                    minLength: 1
+                    maxLength: 15
+                    example: niripsa
+                email:
+                    type: string
+                    format: email
+                    example: niripsa@gmail.com
+                password:
+                    type: string
+                    minLength: 6
+                    maxLength: 12
+                    example: supersecretpwd123
+            required: true
+
+        user:
+            type: object
+            properties:
+                id:
+                    $ref: '#/components/schemas/id'
+                email:
+                    type: string
+                    format: email
+                    example: niripsa@gmail.com
+            required: true
+
+        comment:
+            type: object
+            properties:
+                text:
+                    type: string
+                    minLength: 5
+                    maxLength: 1024
+                    example: Под пивко пойдет, ставлю 7 :)
+                rating:
+                    type: integer
+                    minimum: 0
+                    maximum: 10
+                    example: 7
+                publicationDate:
+                    type: string
+                    format: date-time
+                    example: 2022-11-21T21:16:13.542Z
+                author:
+                    $ref: '#/components/schemas/user'
+            required: true
+
+        genre:
+            type: string
+            enum: [ comedy, crime, documentary, drama, horror, family, romance, scifi, thriller ]
+            example: drama
+
+        createMovie:
+            type: object
+            properties:
+                name:
+                    type: string
+                    minLength: 2
+                    maxLength: 100
+                    example: В саду, где сверкают светлячки
+                description:
+                    type: string
+                    minLength: 20
+                    maxLength: 1024
+                    example: Очень красивое описание, которое заставит всех посмотреть это шедевральное аниме.
+                publicationDate:
+                    type: string
+                    format: date-time
+                    example: 2022-11-21T21:16:13.542Z
+                genre:
+                    $ref: '#/components/schemas/genre'
+                releaseYear:
+                    type: integer
+                    example: 2022
+                rating:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 10
+                    example: 7.8
+                preview:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-preview.png
+                video:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki.mp4
+                actors:
+                    type: array
+                    items:
+                        type: string
+                    minItems: 1
+                    uniqueItems: true
+                    example: [ Ли Адамс, Адам Ли, Кук Хэм ]
+                producer:
+                    type: string
+                    minLength: 2
+                    maxLength: 50
+                    example: Федерик Лоустон
+                duration:
+                    type: integer
+                    example: 123
+                userId:
+                    type: string
+                    format: uuid
+                    example: 6329c3d6a04ab1061c6425ea
+                poster:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-poster.png
+                backgroundImage:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-background.png
+                backgroundColor:
+                    type: string
+                    example: "#fde123"
+            required: true
+
+        movie:
+            type: object
+            properties:
+                name:
+                    type: string
+                    minLength: 2
+                    maxLength: 100
+                    example: В саду, где сверкают светлячки
+                description:
+                    type: string
+                    minLength: 20
+                    maxLength: 1024
+                    example: Очень красивое описание, которое заставит всех посмотреть это шедевральное аниме.
+                publicationDate:
+                    type: string
+                    format: date-time
+                    example: 2022-11-21T21:16:13.542Z
+                genre:
+                    $ref: '#/components/schemas/genre'
+                releaseYear:
+                    type: integer
+                    example: 2022
+                rating:
+                    type: number
+                    format: float
+                    minimum: 0
+                    maximum: 10
+                    example: 7.8
+                preview:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-preview.png
+                video:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki.mp4
+                actors:
+                    type: array
+                    items:
+                        type: string
+                    minItems: 1
+                    uniqueItems: true
+                    example: [ Ли Адамс, Адам Ли, Кук Хэм ]
+                producer:
+                    type: string
+                    minLength: 2
+                    maxLength: 50
+                    example: Федерик Лоустон
+                duration:
+                    type: integer
+                    example: 123
+                user:
+                    $ref: '#/components/schemas/user'
+                commentsCount:
+                    type: integer
+                    example: 5
+                poster:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-poster.png
+                backgroundImage:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-background.png
+                backgroundColor:
+                    type: string
+                    example: "#fde123"
+            required: true
+
+        movieListItem:
+            type: object
+            properties:
+                name:
+                    type: string
+                    minLength: 2
+                    maxLength: 100
+                    example: В саду, где сверкают светлячки
+                publicationDate:
+                    type: string
+                    format: date-time
+                    example: 2022-11-21T21:16:13.542Z
+                genre:
+                    $ref: '#/components/schemas/genre'
+                preview:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-preview.png
+                user:
+                    $ref: '#/components/schemas/user'
+                poster:
+                    type: string
+                    format: url
+                    example: https://what-to-watch.com/previews/v-sadu-gde-sverkayut-svetlyachki-poster.png
+                commentsCount:
+                    type: integer
+                    example: 5
+            required: true

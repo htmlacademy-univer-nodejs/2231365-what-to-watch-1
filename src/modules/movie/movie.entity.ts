@@ -40,7 +40,7 @@ export class MovieEntity extends defaultClasses.TimeStamps {
   public actors!: string[];
 
   @prop({ required: true, minlength: [2, 'Min length for producer is 2'], maxlength: [50, 'Max length for producer is 50'] })
-  public producer!: string[];
+  public producer!: string;
 
   @prop({ required: true })
   public duration!: number;
