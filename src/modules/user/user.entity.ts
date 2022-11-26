@@ -29,6 +29,9 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   @prop({ required: false, match: [/.*\.(?:jpg|png)/, 'Avatar must be jpg or png'] })
   public avatar!: string;
 
+  @prop({ required: true, default: [], type: () => String })
+  public inList!: string[];
+
   @prop({ required: true })
   private password!: string;
 

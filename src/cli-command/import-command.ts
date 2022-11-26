@@ -31,7 +31,7 @@ export default class ImportCommand implements CliCommandInterface {
 
     this.logger = new ConsoleLoggerService();
     this.movieService = new MovieService(this.logger, MovieModel);
-    this.userService = new UserService(this.logger, UserModel);
+    this.userService = new UserService(this.logger, UserModel, MovieModel);
     this.databaseService = new DatabaseService(this.logger);
   }
 
@@ -48,8 +48,8 @@ export default class ImportCommand implements CliCommandInterface {
   }
 
   private async onLine(line: string, resolve: VoidFunction) {
-    const offer = createMovie(line);
-    await this.saveMovie(offer);
+    const movie = createMovie(line);
+    await this.saveMovie(movie);
     resolve();
   }
 
