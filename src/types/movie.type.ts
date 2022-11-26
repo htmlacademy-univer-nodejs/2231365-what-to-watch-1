@@ -2,6 +2,7 @@ import {User} from './user.type';
 import {Genre} from './movie-genre.enum';
 
 export type Movie = {
+  isPromo?: boolean;
   name: string;
   description: string;
   publicationDate: Date;

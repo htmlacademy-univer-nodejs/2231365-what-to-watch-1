@@ -12,7 +12,7 @@ ${chalk.bold('Пример:')} ${chalk.hex('#8adb90')('node')} ${chalk.hex('#f29
 ${chalk.bold('Команды:')}
      ${chalk.hex('#ffb17a')('--version:')}                    # выводит номер версии
      ${chalk.hex('#ffb17a')('--help:')}                       # печатает этот текст
-     ${chalk.hex('#ffb17a')('--import')} ${chalk.hex('#eaed91')('<path>:')}              # импортирует данные из TSV
+     ${chalk.hex('#ffb17a')('--import')} ${chalk.hex('#eaed91')('<login> <password> <host> <dbname> <salt> <path>:')}              # импортирует данные из TSV
      ${chalk.hex('#ffb17a')('--generate')} ${chalk.hex('#eaed91')('<n> <path> <url>:')}  # генерирует произвольное количество тестовых данных
 
 Для использования CLI напрямую (без ключевого слова "node"), введите в консоли ${chalk.hex('#ff7ac1').bold('chmod u+x cli.js')} (только для MacOS и Linux).

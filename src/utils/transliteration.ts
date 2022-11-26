@@ -41,7 +41,7 @@ export function transletirate(word: string): string {
   for (const letter of word) {
     if (letter in alphabet) {
       answer += alphabet[letter];
-    } else {
+    } else if (letter.toLowerCase() !== letter.toUpperCase()) {
       answer += letter;
     }
   }
