@@ -317,7 +317,7 @@ paths:
     /movies/inList:
         get:
             tags:
-                - movies
+                - users
             summary: Получение фильмов, добавленных в "Мой лист".
             description: Получает список фильмов, добавленных в "Мой лист".
             requestBody:
