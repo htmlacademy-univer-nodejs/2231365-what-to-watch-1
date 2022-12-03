@@ -1,6 +1,7 @@
 import {Genre} from '../types/movie-genre.enum.js';
 import {Movie} from '../types/movie.type';
 import crypto from 'crypto';
+import {ClassConstructor, plainToInstance} from 'class-transformer';
 
 export const createMovie = (row: string): Movie => {
   const tokens = row.replace('\n', '').split('\t');
@@ -69,3 +70,10 @@ function isValidGenre(genre: string): boolean {
   const options: string[] = Object.values(Genre);
   return options.includes(genre);
 }
+
+export const fillDTO = <T, V>(someDto: ClassConstructor<T>, plainObject: V) =>
+  plainToInstance(someDto, plainObject, {excludeExtraneousValues: true});
+
+export const createErrorObject = (message: string) => ({
+  error: message,
+});
