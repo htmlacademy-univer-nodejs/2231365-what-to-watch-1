@@ -1,6 +1,7 @@
 import {User} from '../../types/user.type.js';
 import typegoose, {getModelForClass, defaultClasses} from '@typegoose/typegoose';
 import {checkPassword, createSHA256} from '../../utils/common.js';
+import CreateUserDto from './dto/create-user.dto.js';
 
 const {prop, modelOptions} = typegoose;
 
@@ -12,7 +13,7 @@ export interface UserEntity extends defaultClasses.Base {}
   }
 })
 export class UserEntity extends defaultClasses.TimeStamps implements User {
-  constructor(data: User) {
+  constructor(data: CreateUserDto) {
     super();
 
     this.username = data.username;
@@ -27,7 +28,7 @@ export class UserEntity extends defaultClasses.TimeStamps implements User {
   public email!: string;
 
   @prop({ required: false, match: [/.*\.(?:jpg|png)/, 'Avatar must be jpg or png'] })
-  public avatar!: string;
+  public avatar?: string;
 
   @prop({ required: true, default: [], type: () => String })
   public inList!: string[];

@@ -18,6 +18,12 @@ import {ValidateObjectIdMiddleware} from '../../common/middlewares/validate-obje
 import {DocumentExistsMiddleware} from '../../common/middlewares/document-exists.middleware.js';
 import {MovieServiceInterface} from '../movie/movie-service.interface.js';
 import {Prop} from '../../types/prop.enum.js';
+import {UploadFileMiddleware} from '../../common/middlewares/upload-file.middleware.js';
+import * as core from 'express-serve-static-core';
+
+type ParamsUpdateUser = {
+  userId: string;
+}
 
 @injectable()
 export default class UserController extends Controller {
@@ -35,13 +41,20 @@ export default class UserController extends Controller {
       path: '/register',
       method: HttpMethod.POST,
       handler: this.create,
-      middlewares: [new ValidateDtoMiddleware(CreateUserDto)]});
+      middlewares: [
+        new ValidateDtoMiddleware(CreateUserDto)
+      ]
+    });
 
     this.addRoute({
       path: '/login',
       method: HttpMethod.POST,
       handler: this.login,
-      middlewares: [new ValidateDtoMiddleware(LoginUserDto)]});
+      middlewares: [
+        new ValidateDtoMiddleware(LoginUserDto)
+      ]
+    });
+
     this.addRoute({path: '/login', method: HttpMethod.GET, handler: this.getState});
 
     this.addRoute({path: '/logout', method: HttpMethod.DELETE, handler: this.logout});
@@ -50,22 +63,43 @@ export default class UserController extends Controller {
       path: '/inList',
       method: HttpMethod.GET,
       handler: this.showInList,
-      middlewares: [new ValidateObjectIdMiddleware('userId', Prop.Body),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)]});
+      middlewares: [
+        new ValidateObjectIdMiddleware('userId', Prop.Body),
+        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)
+      ]
+    });
+
     this.addRoute({
       path: '/inList',
       method: HttpMethod.POST,
       handler: this.addInList,
-      middlewares: [new ValidateObjectIdMiddleware('movieId', Prop.Params), new ValidateObjectIdMiddleware('userId', Prop.Body),
+      middlewares: [
+        new ValidateObjectIdMiddleware('movieId', Prop.Params), new ValidateObjectIdMiddleware('userId', Prop.Body),
         new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Body),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)]});
+        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)
+      ]
+    });
+
     this.addRoute({
       path: '/inList',
       method: HttpMethod.DELETE,
       handler: this.deleteInList,
-      middlewares: [new ValidateObjectIdMiddleware('movieId', Prop.Params), new ValidateObjectIdMiddleware('userId', Prop.Body),
+      middlewares: [
+        new ValidateObjectIdMiddleware('movieId', Prop.Params), new ValidateObjectIdMiddleware('userId', Prop.Body),
         new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Body),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)]});
+        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)
+      ]
+    });
+
+    this.addRoute({
+      path: '/:userId/avatar',
+      method: HttpMethod.POST,
+      handler: this.uploadAvatar,
+      middlewares: [
+        new ValidateObjectIdMiddleware('userId', Prop.Params),
+        new UploadFileMiddleware(this.configService.get('UPLOAD_DIRECTORY'), 'avatar'),
+      ]
+    });
   }
 
   public async create({body}: Request<Record<string, unknown>, Record<string, unknown>, CreateUserDto>, res: Response): Promise<void> {
@@ -125,11 +159,16 @@ export default class UserController extends Controller {
 
   public async addInList({body}: Request<Record<string, unknown>, Record<string, unknown>, {movieId: string, userId: string}>, res: Response): Promise<void> {
     await this.userService.addInList(body.movieId, body.userId);
-    this.noContent(res, {message: 'Фильм успешно добавлен в список "Мой лист".'});
+    this.noContent(res, {message: 'Movie was successfully added to In List'});
   }
 
   public async deleteInList({body}: Request<Record<string, unknown>, Record<string, unknown>, {movieId: string, userId: string}>, res: Response): Promise<void> {
     await this.userService.deleteInList(body.movieId, body.userId);
-    this.noContent(res, {message: 'Фильм успешно удален из списка "Мой лист".'});
+    this.noContent(res, {message: 'Movie was successfully removed from In List'});
+  }
+
+  public async uploadAvatar(req: Request<core.ParamsDictionary | ParamsUpdateUser>, res: Response) {
+    const user = await this.userService.updateById(req.params.userId, {avatar: req.file?.path});
+    this.created(res, user);
   }
 }

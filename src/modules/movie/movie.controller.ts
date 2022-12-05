@@ -35,37 +35,57 @@ export default class MovieController extends Controller {
     this.logger.info('Register routes for MovieController…');
 
     this.addRoute({path: '/', method: HttpMethod.GET, handler: this.index});
+
     this.addRoute({
       path: '/create',
       method: HttpMethod.POST,
       handler: this.create,
-      middlewares: [new ValidateDtoMiddleware(CreateMovieDto)]});
+      middlewares: [
+        new ValidateDtoMiddleware(CreateMovieDto)
+      ]
+    });
+
     this.addRoute({path: '/promo', method: HttpMethod.GET, handler: this.showPromo});
+
     this.addRoute({
       path: '/:movieId',
       method: HttpMethod.GET,
       handler: this.show,
-      middlewares: [new ValidateObjectIdMiddleware('movieId', Prop.Params),
-        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)]});
+      middlewares: [
+        new ValidateObjectIdMiddleware('movieId', Prop.Params),
+        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)
+      ]
+    });
+
     this.addRoute({
       path: '/:movieId',
       method: HttpMethod.PATCH,
       handler: this.update,
-      middlewares: [new ValidateObjectIdMiddleware('movieId', Prop.Params), new ValidateDtoMiddleware(UpdateMovieDto),
-        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)]});
+      middlewares: [
+        new ValidateDtoMiddleware(UpdateMovieDto), new ValidateObjectIdMiddleware('movieId', Prop.Params),
+        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)
+      ]
+    });
+
     this.addRoute({
       path: '/:movieId',
       method: HttpMethod.DELETE,
       handler: this.delete,
-      middlewares: [new ValidateObjectIdMiddleware('movieId', Prop.Params),
-        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)]});
+      middlewares: [
+        new ValidateObjectIdMiddleware('movieId', Prop.Params),
+        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)
+      ]
+    });
+
     this.addRoute({
       path: '/:movieId/comments',
       method: HttpMethod.GET,
       handler: this.showComments,
-      middlewares: [new ValidateObjectIdMiddleware('movieId', Prop.Params),
-        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)]});
-
+      middlewares: [
+        new ValidateObjectIdMiddleware('movieId', Prop.Params),
+        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)
+      ]
+    });
   }
 
   public async index({query}: Request<core.ParamsDictionary, unknown, unknown, RequestQuery>, res: Response): Promise<void> {
