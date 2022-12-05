@@ -3,8 +3,9 @@ import {MovieEntity} from './movie.entity.js';
 import {DocumentType} from '@typegoose/typegoose';
 import {Genre} from '../../types/movie-genre.enum.js';
 import UpdateMovieDto from './dto/update-movie.dto.js';
+import {DocumentExistsInterface} from '../../types/document-exists.interface.js';
 
-export interface MovieServiceInterface {
+export interface MovieServiceInterface extends DocumentExistsInterface {
     create(dto: CreateMovieDto): Promise<DocumentType<MovieEntity>>;
     findById(movieId: string): Promise<DocumentType<MovieEntity> | null>;
     find(limit?: number): Promise<DocumentType<MovieEntity>[]>;
