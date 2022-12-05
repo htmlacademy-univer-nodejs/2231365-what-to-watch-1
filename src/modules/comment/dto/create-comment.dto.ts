@@ -9,7 +9,7 @@ export default class CreateCommentDto {
   @IsInt({message: 'Rate should be an integer.'})
   public rating!: number;
 
-  @IsDateString({}, {message: 'Field publicationDate must be correct ISO date.'})
+  @IsDateString({}, {message: 'publicationDate must be correct ISO date.'})
   public publicationDate!: Date;
 
   @IsMongoId({message: 'UserId must be valid mongoId.'})
