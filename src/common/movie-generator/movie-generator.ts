@@ -20,13 +20,13 @@ export default class MovieGenerator implements MovieGeneratorInterface {
     const publicationDate = generateRandomDate().toISOString();
     const genre = getRandomItems<string>(Object.values(Genre)).join(';');
     const releaseYear = generateRandomValue(1980, 2022);
-    const rating = generateRandomValue(0, 10, 1);
+    const rating = 0;
     const preview = `${traslitName}-preview.mp4`;
     const video = `${traslitName}.mp4`;
     const actors = getRandomItems<string>(this.mockData.actors).join(';');
     const producer = getRandomItem<string>(this.mockData.producers);
     const duration = generateRandomValue(30, 200);
-    const commentsCount = generateRandomValue(0, 100);
+    const commentsCount = 0;
     const username = getRandomItem<string>(this.mockData.users.usernames);
     const email = getRandomItem<string>(this.mockData.users.emails);
     const avatar = `${username}.jpg`;

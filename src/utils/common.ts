@@ -30,7 +30,7 @@ export const createMovie = (row: string): Movie => {
     description: description,
     publicationDate: new Date(publicationDate),
     genre: genre.split(';').map((g) => {
-      if (isValidGenre(g)) {
+      if (IsValidGenre(g)) {
         return g as Genre;
       } else {
         throw new Error('Такого жанра не существует.');
@@ -66,7 +66,7 @@ export const checkPassword = (password: string): void =>
   }
 };
 
-function isValidGenre(genre: string): boolean {
+export function IsValidGenre(genre: string): boolean {
   const options: string[] = Object.values(Genre);
   return options.includes(genre);
 }

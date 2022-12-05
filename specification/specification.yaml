@@ -135,7 +135,7 @@ paths:
                 "403":
                     description: Неверный токен. Деавторизация не завершилась.
 
-    /comments/addComment:
+    /comments:
         post:
             tags:
                 - comments

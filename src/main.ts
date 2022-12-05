@@ -26,7 +26,8 @@ import {ControllerInterface} from './common/controller/controller.interface.js';
 import UserController from './modules/user/user.controller.js';
 import {ExceptionFilterInterface} from './common/errors/exception-filter.interface';
 import ExceptionFilter from './common/errors/exception-filter.js';
-// import MovieController from './modules/movie/movie.controller.js';
+import MovieController from './modules/movie/movie.controller.js';
+import CommentController from './modules/comment/comment.controller.js';
 
 const applicationContainer = new Container();
 applicationContainer.bind<Application>(Component.Application).to(Application).inSingletonScope();
@@ -44,7 +45,8 @@ applicationContainer.bind<CommentServiceInterface>(Component.CommentServiceInter
 applicationContainer.bind<types.ModelType<CommentEntity>>(Component.CommentModel).toConstantValue(CommentModel);
 
 applicationContainer.bind<ControllerInterface>(Component.UserController).to(UserController).inSingletonScope();
-// applicationContainer.bind<ControllerInterface>(Component.MovieController).to(MovieController).inSingletonScope();
+applicationContainer.bind<ControllerInterface>(Component.MovieController).to(MovieController).inSingletonScope();
+applicationContainer.bind<ControllerInterface>(Component.CommentController).to(CommentController).inSingletonScope();
 
 applicationContainer.bind<ExceptionFilterInterface>(Component.ExceptionFilterInterface).to(ExceptionFilter).inSingletonScope();
 

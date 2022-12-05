@@ -23,11 +23,11 @@ export default class MovieService implements MovieServiceInterface {
     const result = await this.movieModel.create(dto);
     this.logger.info(`New movie created: ${dto.name}`);
 
-    return result;
+    return result.populate('userId');
   }
 
   public async findById(movieId: string): Promise<DocumentType<MovieEntity> | null> {
-    return this.movieModel.findById(movieId).exec();
+    return this.movieModel.findById(movieId).populate('userId').exec();
   }
 
   public async deleteById(movieId: string): Promise<void | null> {
@@ -36,29 +36,7 @@ export default class MovieService implements MovieServiceInterface {
 
   public async find(limit?: number): Promise<DocumentType<MovieEntity>[]> {
     const movieLimit = limit ?? DEFAULT_MOVIE_COUNT;
-    return this.movieModel.aggregate([
-      {
-        $lookup: {
-          from: 'comments',
-          localField: 'movieId',
-          foreignField: 'movieId',
-          pipeline: [
-            {$project: {_id: 1, rating: 1}}
-          ],
-          as: 'comments'
-        },
-      },
-      {
-        $addFields: {
-          id: {$toString: '$_id'},
-          commentsCount: {$size: '$comments'},
-          rating: {$avg: '$comments.rating'},
-        }
-      },
-      {$unset: 'comments'},
-      {$limit: movieLimit},
-      {$sort: {publicationDate: SortType.Down}}
-    ]);
+    return this.movieModel.find().sort({publicationDate: SortType.Down}).limit(movieLimit).populate('userId').exec();
   }
 
   public async findByGenre(genre: Genre, limit?: number): Promise<DocumentType<MovieEntity>[]> {
@@ -67,7 +45,7 @@ export default class MovieService implements MovieServiceInterface {
   }
 
   public async findPromo(): Promise<DocumentType<MovieEntity> | null> {
-    return this.movieModel.findOne({isPromo: true}).populate('userId');
+    return this.movieModel.findOne({isPromo: true}).populate('userId').exec();
   }
 
   public async updateById(movieId: string, dto: UpdateMovieDto): Promise<DocumentType<MovieEntity> | null> {
@@ -75,7 +53,7 @@ export default class MovieService implements MovieServiceInterface {
   }
 
   public async updateCommentsCount(movieId: string): Promise<void | null> {
-    return this.movieModel.findByIdAndUpdate(movieId, {$inc: {commentsCount: 1}, new: true});
+    return this.movieModel.findByIdAndUpdate(movieId, {$inc: {commentsCount: 1}});
   }
 
   public async updateRating(movieId: string, rate: number): Promise<void | null> {
@@ -83,5 +61,9 @@ export default class MovieService implements MovieServiceInterface {
     const prevRating = prevValues?.['rating'] ?? 0;
     const prevCommentsCount = prevValues?.['commentsCount'] ?? 0;
     return this.movieModel.findByIdAndUpdate(movieId, {rating: (prevRating * prevCommentsCount + rate) / (prevCommentsCount + 1), new: true});
+  }
+
+  async exists(documentId: string): Promise<boolean> {
+    return (await this.movieModel.exists({_id: documentId})) !== null;
   }
 }
