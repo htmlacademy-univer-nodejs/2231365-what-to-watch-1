@@ -8,8 +8,21 @@ Content-Type: application/json
   "password": "123456"
 }
 
+### Log in
+POST http://localhost:1234/users/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "fghjk@mail.ru",
+  "password": "123456"
+}
+
+### Get user state
+GET http://localhost:1234/users/login HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5NzY3OCwiZXhwIjoxNjcwNTcwNDc4fQ.J1hLxWoIYxY99II_mT83Sey_5rDqS_h_casxZG8FlF0
+
 ### Create avatar
-POST http://localhost:1234/users/638bf2dd1fcdd20e4ec96b73/avatar HTTP/1.1
+POST http://localhost:1234/users/638de5d64ff2cb3128ba0f0c/avatar HTTP/1.1
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
@@ -21,40 +34,34 @@ Content-Type: image/png
 
 ### Get inList
 GET http://localhost:1234/users/inList HTTP/1.1
-Content-Type: application/json
-
-{
-  "userId": "638bf2dd1fcdd20e4ec96b73"
-}
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5NzY3OCwiZXhwIjoxNjcwNTcwNDc4fQ.J1hLxWoIYxY99II_mT83Sey_5rDqS_h_casxZG8FlF0
 
 ### Add inList
 POST http://localhost:1234/users/inList HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5NzY3OCwiZXhwIjoxNjcwNTcwNDc4fQ.J1hLxWoIYxY99II_mT83Sey_5rDqS_h_casxZG8FlF0
 Content-Type: application/json
 
 {
-  "movieId": "638bf2dd1fcdd20e4ec96b7d",
-  "userId": "638bf2dd1fcdd20e4ec96b73"
+  "movieId": "638bf2dd1fcdd20e4ec96b7d"
 }
 
 ### Delete inList
 DELETE http://localhost:1234/users/inList HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5NzY3OCwiZXhwIjoxNjcwNTcwNDc4fQ.J1hLxWoIYxY99II_mT83Sey_5rDqS_h_casxZG8FlF0
 Content-Type: application/json
 
 {
-  "movieId": "638bf2dd1fcdd20e4ec96b7d",
-  "userId": "638bf2dd1fcdd20e4ec96b73"
+  "movieId": "638bf2dd1fcdd20e4ec96b7d"
 }
-
-
 
 ### Create movie
 POST http://localhost:1234/movies/create HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5Mjk3MywiZXhwIjoxNjcwNTY1NzczfQ.gLuNQNi6g710BwIPhbS8XYrQMQQ3gfSqkZJBvFF_GRs
 Content-Type: application/json
 
 {
-  "name": "testName1s",
+  "name": "testNadfgfghjkme1s",
   "description": "test description for film1",
-  "publicationDate": "2022-01-04T12:34:42.532Z",
   "genre": [
     "scifi",
     "comedy"
@@ -68,7 +75,6 @@ Content-Type: application/json
   ],
   "producer": "Тест Продюссер1",
   "duration": 137,
-  "userId": "638bf7be056127853f48fbc0",
   "poster": "test-poster1.jpg",
   "isPromo": true,
   "backgroundImage": "test-background1.jpg",
@@ -79,15 +85,17 @@ Content-Type: application/json
 GET http://localhost:1234/movies/638dfd14756f59c67761ff33 HTTP/1.1
 
 ### Update movie
-PATCH http://localhost:1234/movies/638df7c4aed459886e5d05d1 HTTP/1.1
+PATCH http://localhost:1234/movies/6390422f53023534d11ea9e4 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5Mjk3MywiZXhwIjoxNjcwNTY1NzczfQ.gLuNQNi6g710BwIPhbS8XYrQMQQ3gfSqkZJBvFF_GRs
 Content-Type: application/json
 
 {
-  "name": "N"
+  "name": "NoNoNoNo"
 }
 
 ### Delete movie
-DELETE http://localhost:1234/movies/638df7c4aed459886e5d05d1 HTTP/1.1
+DELETE http://localhost:1234/movies/6390422f53023534d11ea9e4 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5Mjk3MywiZXhwIjoxNjcwNTY1NzczfQ.gLuNQNi6g710BwIPhbS8XYrQMQQ3gfSqkZJBvFF_GRs
 
 ### Get movies
 GET http://localhost:1234/movies?genre=comedy&limit=1 HTTP/1.1
@@ -100,12 +108,11 @@ GET http://localhost:1234/movies/638dfd14756f59c67761ff33/comments HTTP/1.1
 
 ### Add comment
 POST http://localhost:1234/comments HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJpZCI6IjYzOGUyMTk0YzU0NTQwYmJiYWVkMmEzNiIsImVtYWlsIjoiZmdoamtAbWFpbC5ydSIsImlhdCI6MTY3MDM5Mjk3MywiZXhwIjoxNjcwNTY1NzczfQ.gLuNQNi6g710BwIPhbS8XYrQMQQ3gfSqkZJBvFF_GRs
 Content-Type: application/json
 
 {
-  "text": "Awesome movie???",
-  "rating": 2,
-  "publicationDate": "2022-01-04T12:34:42.532Z",
-  "userId": "638bf2dd1fcdd20e4ec96b73",
+  "text": "LolLol",
+  "rating": 9,
   "movieId": "638dfd14756f59c67761ff33"
 }

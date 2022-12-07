@@ -7,6 +7,7 @@ import {LoggerInterface} from '../../common/logger/logger.interface.js';
 import {Component} from '../../types/component.types.js';
 import {MovieEntity} from '../movie/movie.entity.js';
 import UpdateUserDto from './dto/update-user.dto.js';
+import LoginUserDto from './dto/login-user.dto.js';
 
 
 @injectable()
@@ -41,7 +42,7 @@ export default class UserService implements UserServiceInterface {
     return this.create(dto, salt);
   }
 
-  async findInList(userId: string): Promise<DocumentType<MovieEntity>[]> {
+  public async findInList(userId: string): Promise<DocumentType<MovieEntity>[]> {
     const movieList = await this.userModel.findById(userId).select('inList');
     if (!movieList) {
       return [];
@@ -49,19 +50,27 @@ export default class UserService implements UserServiceInterface {
     return this.movieModel.find({_id: { $in: movieList.inList }});
   }
 
-  async addInList(movieId: string, userId: string): Promise<void | null> {
+  public async addInList(movieId: string, userId: string): Promise<void | null> {
     return this.userModel.findByIdAndUpdate(userId, { $push: {inList: movieId}, new: true });
   }
 
-  async deleteInList(movieId: string, userId: string): Promise<void | null> {
+  public async deleteInList(movieId: string, userId: string): Promise<void | null> {
     return this.userModel.findByIdAndUpdate(userId, { $pull: {inList: movieId}, new: true });
   }
 
-  async updateById(userId: string, dto: UpdateUserDto): Promise<DocumentType<UserEntity> | null> {
+  public async updateById(userId: string, dto: UpdateUserDto): Promise<DocumentType<UserEntity> | null> {
     return this.userModel.findByIdAndUpdate(userId, dto, {new: true}).exec();
   }
 
-  async exists(documentId: string): Promise<boolean> {
+  public async exists(documentId: string): Promise<boolean> {
     return (await this.userModel.exists({_id: documentId})) !== null;
+  }
+
+  public async verifyUser(dto: LoginUserDto, salt: string): Promise<DocumentType<UserEntity> | null> {
+    const user = await this.findByEmail(dto.email);
+    if (!user) {
+      return null;
+    }
+    return user.verifyPassword(dto.password, salt) ? user : null;
   }
 }

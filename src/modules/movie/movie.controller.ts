@@ -18,6 +18,7 @@ import {ValidateObjectIdMiddleware} from '../../common/middlewares/validate-obje
 import {ValidateDtoMiddleware} from '../../common/middlewares/validate-dto.middleware.js';
 import {DocumentExistsMiddleware} from '../../common/middlewares/document-exists.middleware.js';
 import {Prop} from '../../types/prop.enum.js';
+import {PrivateRouteMiddleware} from '../../common/middlewares/private-route.middleware.js';
 
 type ParamsGetMovie = {
   movieId: string;
@@ -41,6 +42,7 @@ export default class MovieController extends Controller {
       method: HttpMethod.POST,
       handler: this.create,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateDtoMiddleware(CreateMovieDto)
       ]
     });
@@ -62,6 +64,7 @@ export default class MovieController extends Controller {
       method: HttpMethod.PATCH,
       handler: this.update,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateDtoMiddleware(UpdateMovieDto), new ValidateObjectIdMiddleware('movieId', Prop.Params),
         new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)
       ]
@@ -72,6 +75,7 @@ export default class MovieController extends Controller {
       method: HttpMethod.DELETE,
       handler: this.delete,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('movieId', Prop.Params),
         new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Params)
       ]
@@ -99,8 +103,9 @@ export default class MovieController extends Controller {
     this.ok(res, fillDTO(MovieResponse, movies));
   }
 
-  public async create({body}: Request<Record<string, unknown>, Record<string, unknown>, CreateMovieDto>, res: Response): Promise<void> {
-    const movie = await this.movieService.create(body);
+  public async create(req: Request<object, object, CreateMovieDto>, res: Response): Promise<void> {
+    const {body, user} = req;
+    const movie = await this.movieService.create({...body, userId: user.id});
     this.created(res, fillDTO(MovieResponse, movie));
   }
 

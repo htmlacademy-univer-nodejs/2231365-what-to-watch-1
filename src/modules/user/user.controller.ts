@@ -8,7 +8,7 @@ import CreateUserDto from './dto/create-user.dto.js';
 import {Request, Response} from 'express';
 import {ConfigInterface} from '../../common/config/config.interface.js';
 import UserResponse from './response/user.response.js';
-import {fillDTO} from '../../utils/common.js';
+import {createJWT, fillDTO} from '../../utils/common.js';
 import LoginUserDto from './dto/login-user.dto.js';
 import {StatusCodes} from 'http-status-codes';
 import HttpError from '../../common/errors/http-error.js';
@@ -20,6 +20,9 @@ import {MovieServiceInterface} from '../movie/movie-service.interface.js';
 import {Prop} from '../../types/prop.enum.js';
 import {UploadFileMiddleware} from '../../common/middlewares/upload-file.middleware.js';
 import * as core from 'express-serve-static-core';
+import {JWT_ALGORITM} from './user.constant.js';
+import LoggedUserResponse from './response/logged-user.response.js';
+import {PrivateRouteMiddleware} from '../../common/middlewares/private-route.middleware.js';
 
 type ParamsUpdateUser = {
   userId: string;
@@ -64,8 +67,7 @@ export default class UserController extends Controller {
       method: HttpMethod.GET,
       handler: this.showInList,
       middlewares: [
-        new ValidateObjectIdMiddleware('userId', Prop.Body),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)
+        new PrivateRouteMiddleware()
       ]
     });
 
@@ -74,9 +76,9 @@ export default class UserController extends Controller {
       method: HttpMethod.POST,
       handler: this.addInList,
       middlewares: [
-        new ValidateObjectIdMiddleware('movieId', Prop.Params), new ValidateObjectIdMiddleware('userId', Prop.Body),
-        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Body),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)
+        new PrivateRouteMiddleware(),
+        new ValidateObjectIdMiddleware('movieId', Prop.Body),
+        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Body)
       ]
     });
 
@@ -85,9 +87,9 @@ export default class UserController extends Controller {
       method: HttpMethod.DELETE,
       handler: this.deleteInList,
       middlewares: [
-        new ValidateObjectIdMiddleware('movieId', Prop.Params), new ValidateObjectIdMiddleware('userId', Prop.Body),
-        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Body),
-        new DocumentExistsMiddleware(this.userService, 'User', 'userId', Prop.Body)
+        new PrivateRouteMiddleware(),
+        new ValidateObjectIdMiddleware('movieId', Prop.Body),
+        new DocumentExistsMiddleware(this.movieService, 'Movie', 'movieId', Prop.Body)
       ]
     });
 
@@ -96,6 +98,7 @@ export default class UserController extends Controller {
       method: HttpMethod.POST,
       handler: this.uploadAvatar,
       middlewares: [
+        new PrivateRouteMiddleware(),
         new ValidateObjectIdMiddleware('userId', Prop.Params),
         new UploadFileMiddleware(this.configService.get('UPLOAD_DIRECTORY'), 'avatar'),
       ]
@@ -118,30 +121,28 @@ export default class UserController extends Controller {
     this.created(res, fillDTO(UserResponse, newUser));
   }
 
-  public async login({body}: Request<Record<string, unknown>, Record<string, unknown>, LoginUserDto>, _res: Response): Promise<void> {
-    const user = await this.userService.findByEmail(body.email);
+  public async login({body}: Request<Record<string, unknown>, Record<string, unknown>, LoginUserDto>, res: Response): Promise<void> {
+    const user = await this.userService.verifyUser(body, this.configService.get('SALT'));
 
     if (!user) {
       throw new HttpError(
-        StatusCodes.NOT_FOUND,
-        `User with email ${body.email} not found.`,
+        StatusCodes.FORBIDDEN,
+        'Incorrect email or password.',
         'UserController',
       );
     }
 
-    throw new HttpError(
-      StatusCodes.NOT_IMPLEMENTED,
-      'Not implemented',
-      'UserController',
-    );
+    const token = await createJWT(JWT_ALGORITM, this.configService.get('JWT_SECRET'), {id: user.id, email: user.email});
+
+    this.ok(res, fillDTO(LoggedUserResponse, {email: user.email, token}));
   }
 
-  public async getState(_req: Request, _res: Response): Promise<void> {
-    throw new HttpError(
-      StatusCodes.NOT_IMPLEMENTED,
-      'Not implemented',
-      'UserController',
-    );
+  public async getState(req: Request, res: Response): Promise<void> {
+    if (!req.user) {
+      this.noContent(res, {message: 'Unauthorized'});
+    }
+    const user = await this.userService.findByEmail(req.user.email);
+    this.ok(res, fillDTO(LoggedUserResponse, user));
   }
 
   public async logout(_req: Request, _res: Response): Promise<void> {
@@ -152,18 +153,21 @@ export default class UserController extends Controller {
     );
   }
 
-  public async showInList({body}: Request<Record<string, unknown>, Record<string, unknown>, {userId: string}>, _res: Response): Promise<void> {
-    const result = await this.userService.findInList(body.userId);
+  public async showInList(req: Request, _res: Response): Promise<void> {
+    const {user} = req;
+    const result = await this.userService.findInList(user.id);
     this.ok(_res, fillDTO(MovieResponse, result));
   }
 
-  public async addInList({body}: Request<Record<string, unknown>, Record<string, unknown>, {movieId: string, userId: string}>, res: Response): Promise<void> {
-    await this.userService.addInList(body.movieId, body.userId);
+  public async addInList(req: Request<object, object, {movieId: string}>, res: Response): Promise<void> {
+    const {body, user} = req;
+    await this.userService.addInList(body.movieId, user.id);
     this.noContent(res, {message: 'Movie was successfully added to In List'});
   }
 
-  public async deleteInList({body}: Request<Record<string, unknown>, Record<string, unknown>, {movieId: string, userId: string}>, res: Response): Promise<void> {
-    await this.userService.deleteInList(body.movieId, body.userId);
+  public async deleteInList(req: Request<object, object, {movieId: string}>, res: Response): Promise<void> {
+    const {body, user} = req;
+    await this.userService.deleteInList(body.movieId, user.id);
     this.noContent(res, {message: 'Movie was successfully removed from In List'});
   }
 

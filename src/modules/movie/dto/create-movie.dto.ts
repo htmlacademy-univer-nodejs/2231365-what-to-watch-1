@@ -1,5 +1,5 @@
 import {Genre} from '../../../types/movie-genre.enum.js';
-import {IsArray, IsDateString, IsInt, IsMongoId, Length, IsString} from 'class-validator';
+import {IsArray, IsInt, Length, IsString} from 'class-validator';
 
 export default class CreateMovieDto {
   @Length(2, 100, {message: 'Length for name should be from 2 to 100.'})
@@ -10,11 +10,7 @@ export default class CreateMovieDto {
   @IsString({message: 'Description is required.'})
   public description!: string;
 
-  @IsDateString({}, {message: 'Field publicationDate must be correct ISO date.'})
-  public publicationDate!: Date;
-
   @IsArray({message: 'Field genre must be an array.'})
-  // @IsEnum({each: true, message: 'Genre must be an array of enums.'})
   public genre!: Genre[];
 
   @IsInt({message: 'Year must be an integer.'})
@@ -37,7 +33,6 @@ export default class CreateMovieDto {
   @IsInt({message: 'Duration must be an integer.'})
   public duration!: number;
 
-  @IsMongoId({message: 'UserId must be valid mongoId.'})
   public userId!: string;
 
   @IsString({message: 'Poster path is required.'})

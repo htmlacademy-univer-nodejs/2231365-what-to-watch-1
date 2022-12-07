@@ -1,4 +1,4 @@
-import {IsDateString, IsInt, IsMongoId, Length, IsString} from 'class-validator';
+import {IsInt, IsMongoId, Length, IsString} from 'class-validator';
 
 
 export default class CreateCommentDto {
@@ -9,10 +9,6 @@ export default class CreateCommentDto {
   @IsInt({message: 'Rate should be an integer.'})
   public rating!: number;
 
-  @IsDateString({}, {message: 'publicationDate must be correct ISO date.'})
-  public publicationDate!: Date;
-
-  @IsMongoId({message: 'UserId must be valid mongoId.'})
   public userId!: string;
 
   @IsMongoId({message: 'MovieId must be valid mongoId.'})
