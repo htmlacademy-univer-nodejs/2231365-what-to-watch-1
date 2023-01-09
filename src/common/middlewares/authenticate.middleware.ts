@@ -15,18 +15,18 @@ export class AuthenticateMiddleware implements MiddlewareInterface {
     }
 
     const [, token] = authorizationHeader;
+    const {payload} = await jose.jwtVerify(token, createSecretKey(this.jwtSecret, 'utf-8'));
+    const {email, id} = payload;
 
-    try {
-      const {payload} = await jose.jwtVerify(token, createSecretKey(this.jwtSecret, 'utf-8'));
-      req.user = { email: payload.email as string, id: payload.id as string };
-
-      return next();
-    } catch {
+    if (!email || !id) {
       return next(new HttpError(
         StatusCodes.FORBIDDEN,
         'Invalid token',
         'AuthenticateMiddleware')
       );
     }
+
+    req.user = { email: `${email}`, id: `${id}` };
+    return next();
   }
 }
