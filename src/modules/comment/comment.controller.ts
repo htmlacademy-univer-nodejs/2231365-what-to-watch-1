@@ -11,6 +11,7 @@ import CommentResponse from './response/comment.response.js';
 import {ValidateDtoMiddleware} from '../../common/middlewares/validate-dto.middleware.js';
 import {ValidateObjectIdMiddleware} from '../../common/middlewares/validate-objectid.middleware.js';
 import {Prop} from '../../types/prop.enum.js';
+import {PrivateRouteMiddleware} from '../../common/middlewares/private-route.middleware.js';
 
 @injectable()
 export default class CommentController extends Controller {
@@ -26,11 +27,17 @@ export default class CommentController extends Controller {
       path: '/',
       method: HttpMethod.POST,
       handler: this.create,
-      middlewares: [new ValidateDtoMiddleware(CreateCommentDto), new ValidateObjectIdMiddleware('movieId', Prop.Body)]});
+      middlewares: [
+        new PrivateRouteMiddleware(),
+        new ValidateDtoMiddleware(CreateCommentDto),
+        new ValidateObjectIdMiddleware('movieId', Prop.Body)
+      ]
+    });
   }
 
-  public async create({body}: Request<object, object, CreateCommentDto>, res: Response): Promise<void> {
-    const comment = await this.commentService.create(body);
+  public async create(req: Request<object, object, CreateCommentDto>, res: Response): Promise<void> {
+    const {body} = req;
+    const comment = await this.commentService.create({...body, userId: req.user.id});
     this.created(res, fillDTO(CommentResponse, comment));
   }
 }

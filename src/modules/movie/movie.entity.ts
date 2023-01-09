@@ -21,7 +21,7 @@ export class MovieEntity extends defaultClasses.TimeStamps {
   @prop({ default: false })
   public isPromo!: boolean;
 
-  @prop({ required: true, default: new Date() })
+  @prop({ default: new Date() })
   public publicationDate!: Date;
 
   @prop({type: () => String, enum: Genre })
