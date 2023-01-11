@@ -28,7 +28,6 @@ paths:
                     application/json:
                         schema:
                             $ref: '#/components/schemas/createUser'
-                required: true
 
             responses:
                 "201":
@@ -61,7 +60,6 @@ paths:
                                 password:
                                     type: string
                                     example: 123456
-                required: true
 
             responses:
                 "200":
@@ -146,10 +144,7 @@ paths:
                 content:
                     application/json:
                         schema:
-                            allOf:
-                                -   $ref: '#/components/schemas/comment'
-                                -   $ref: '#/components/schemas/id'
-                                    required: true
+                            $ref: '#/components/schemas/comment'
             responses:
                 "200":
                     description: Комментарий успешно добавлен.
@@ -198,8 +193,9 @@ paths:
                 -   in: path
                     name: movieId
                     schema:
-                        $ref: '#/components/schemas/id'
-                    required: true
+                        type: string
+                        format: uuid
+                        example: 6329c3d6a04ab1061c6425ea
             responses:
                 "200":
                     description: Информация по фильму успешно получена.
@@ -219,8 +215,9 @@ paths:
                 -   in: path
                     name: movieId
                     schema:
-                        $ref: '#/components/schemas/id'
-                    required: true
+                        type: string
+                        format: uuid
+                        example: 6329c3d6a04ab1061c6425ea
 
             requestBody:
                 description: Информации о фильме для редактирования.
@@ -228,7 +225,6 @@ paths:
                     application/json:
                         schema:
                             $ref: '#/components/schemas/createMovie'
-                required: true
             responses:
                 "200":
                     description: Информация о фильме обновлена. Новый объект фильма.
@@ -254,14 +250,17 @@ paths:
                 -   in: path
                     name: movieId
                     schema:
-                        $ref: '#/components/schemas/id'
-                    required: true
+                        type: string
+                        format: uuid
+                        example: 6329c3d6a04ab1061c6425ea
             requestBody:
                 description: Идентификатор пользователя, который хочет удалить фильм.
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/id'
+                            type: string
+                            format: uuid
+                            example: 6329c3d6a04ab1061c6425ea
             responses:
                 "204":
                     description: Фильм успешно удален.
@@ -325,8 +324,9 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: '#/components/schemas/id'
-                            required: true
+                            type: string
+                            format: uuid
+                            example: 6329c3d6a04ab1061c6425ea
             responses:
                 "200":
                     description: Фильмы из списка "Мой лист" успешно получены.
@@ -383,8 +383,9 @@ paths:
                 -   in: path
                     name: movieId
                     schema:
-                        $ref: '#/components/schemas/id'
-                    required: true
+                        type: string
+                        format: uuid
+                        example: 6329c3d6a04ab1061c6425ea
             responses:
                 "200":
                     description: Список комментариев к фильму успешно получен.
@@ -399,19 +400,18 @@ paths:
 
 components:
     schemas:
-        id:
-            type: string
-            format: uuid
-            example: 6329c3d6a04ab1061c6425ea
-
         movieAndUser:
             type: object
             properties:
                 userId:
-                    $ref: '#/components/schemas/id'
+                    type: string
+                    format: uuid
+                    example: 6329c3d6a04ab1061c6425ea
                 movieId:
-                    $ref: '#/components/schemas/id'
-            required: true
+                    type: string
+                    format: uuid
+                    example: 6329c3d6a04ab1061c6425ea
+            required: ['userId', 'movieId']
 
 
         createUser:
@@ -431,18 +431,20 @@ components:
                     minLength: 6
                     maxLength: 12
                     example: supersecretpwd123
-            required: true
+            required: ['username', 'email', 'password']
 
         user:
             type: object
             properties:
                 id:
-                    $ref: '#/components/schemas/id'
+                    type: string
+                    format: uuid
+                    example: 6329c3d6a04ab1061c6425ea
                 email:
                     type: string
                     format: email
                     example: niripsa@gmail.com
-            required: true
+            required: ['id', 'email']
 
         comment:
             type: object
@@ -463,7 +465,11 @@ components:
                     example: 2022-11-21T21:16:13.542Z
                 author:
                     $ref: '#/components/schemas/user'
-            required: true
+                movieId:
+                    type: string
+                    format: uuid
+                    example: 6329c3d6a04ab1061c6425ea
+            required: ['text', 'rating', 'publicationDate', 'author', 'movieId']
 
         genre:
             type: string
@@ -492,12 +498,6 @@ components:
                 releaseYear:
                     type: integer
                     example: 2022
-                rating:
-                    type: number
-                    format: float
-                    minimum: 0
-                    maximum: 10
-                    example: 7.8
                 preview:
                     type: string
                     format: url
@@ -536,7 +536,8 @@ components:
                 backgroundColor:
                     type: string
                     example: "#fde123"
-            required: true
+            required: ['name', 'description', 'publicationDate', 'genre', 'releaseYear', 'preview',
+            'video', 'actors', 'producer', 'duration', 'userId', 'poster', 'backgroundImage', 'backgroundColor']
 
         movie:
             type: object
@@ -605,7 +606,8 @@ components:
                 backgroundColor:
                     type: string
                     example: "#fde123"
-            required: true
+            required: [ 'name', 'description', 'publicationDate', 'genre', 'releaseYear', 'rating', 'preview',
+                        'video', 'actors', 'producer', 'duration', 'user', 'commentsCount', 'poster', 'backgroundImage', 'backgroundColor' ]
 
         movieListItem:
             type: object
@@ -634,4 +636,4 @@ components:
                 commentsCount:
                     type: integer
                     example: 5
-            required: true
+            required: [ 'name', 'publicationDate', 'genre', 'preview', 'user', 'commentsCount', 'poster']

@@ -1,4 +1,4 @@
-import {IsInt, IsMongoId, Length, IsString} from 'class-validator';
+import {IsInt, IsMongoId, Length, IsString, IsNotEmpty, Min, Max} from 'class-validator';
 
 
 export default class CreateCommentDto {
@@ -7,6 +7,9 @@ export default class CreateCommentDto {
   public text!: string;
 
   @IsInt({message: 'Rate should be an integer.'})
+  @IsNotEmpty({message: 'rate is required.'})
+  @Min(1, {message: 'Min value for rating is 1.'})
+  @Max(10, {message: 'Max value for rating is 10.'})
   public rating!: number;
 
   public userId!: string;

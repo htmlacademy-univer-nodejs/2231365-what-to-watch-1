@@ -19,6 +19,10 @@ import {ValidateDtoMiddleware} from '../../common/middlewares/validate-dto.middl
 import {DocumentExistsMiddleware} from '../../common/middlewares/document-exists.middleware.js';
 import {Prop} from '../../types/prop.enum.js';
 import {PrivateRouteMiddleware} from '../../common/middlewares/private-route.middleware.js';
+import {ConfigInterface} from '../../common/config/config.interface.js';
+import HttpError from '../../common/errors/http-error.js';
+import {StatusCodes} from 'http-status-codes';
+import ShortMovieResponse from './response/short-movie.response.js';
 
 type ParamsGetMovie = {
   movieId: string;
@@ -29,9 +33,10 @@ export default class MovieController extends Controller {
   constructor(
     @inject(Component.LoggerInterface) logger: LoggerInterface,
     @inject(Component.MovieServiceInterface) private readonly movieService: MovieServiceInterface,
-    @inject(Component.CommentServiceInterface) private readonly commentService: CommentServiceInterface
+    @inject(Component.CommentServiceInterface) private readonly commentService: CommentServiceInterface,
+    @inject(Component.ConfigInterface) configService: ConfigInterface
   ) {
-    super(logger);
+    super(logger, configService);
 
     this.logger.info('Register routes for MovieController…');
 
@@ -100,7 +105,7 @@ export default class MovieController extends Controller {
     } else {
       movies = await this.movieService.find(limit);
     }
-    this.ok(res, fillDTO(MovieResponse, movies));
+    this.ok(res, fillDTO(ShortMovieResponse, movies));
   }
 
   public async create(req: Request<object, object, CreateMovieDto>, res: Response): Promise<void> {
@@ -116,15 +121,20 @@ export default class MovieController extends Controller {
     this.ok(res, fillDTO(MovieResponse, movie));
   }
 
-  public async update({body, params}: Request<core.ParamsDictionary | ParamsGetMovie, Record<string, unknown>, UpdateMovieDto>, res: Response): Promise<void> {
+  public async update(req: Request<core.ParamsDictionary | ParamsGetMovie, Record<string, unknown>, UpdateMovieDto>, res: Response): Promise<void> {
+    const {body, params, user} = req;
     const {movieId} = params;
+    await this.checkAuthor(user.id, movieId);
     const updatedMovie = await this.movieService.updateById(movieId, body);
     await this.ok(res, fillDTO(MovieResponse, updatedMovie));
   }
 
-  public async delete({params}: Request<core.ParamsDictionary | ParamsGetMovie>, res: Response): Promise<void> {
+  public async delete(req: Request<core.ParamsDictionary | ParamsGetMovie>, res: Response): Promise<void> {
+    const {params, user} = req;
     const {movieId} = params;
+    await this.checkAuthor(user.id, movieId);
     await this.movieService.deleteById(movieId);
+    await this.commentService.deleteAllByMovieId(movieId);
     this.noContent(res, `Movie ${movieId} was successfully deleted.`);
   }
 
@@ -137,5 +147,16 @@ export default class MovieController extends Controller {
     const {movieId} = params;
     const comments = await this.commentService.findByMovieId(movieId);
     this.ok(res, fillDTO(CommentResponse, comments));
+  }
+
+  private async checkAuthor(userId: string, movieId: string) {
+    const movie = await this.movieService.findById(movieId);
+    if (movie?.userId?.id !== userId) {
+      throw new HttpError(
+        StatusCodes.FORBIDDEN,
+        'You can not update or delete this movie because you did not publish it.',
+        'MovieController'
+      );
+    }
   }
 }

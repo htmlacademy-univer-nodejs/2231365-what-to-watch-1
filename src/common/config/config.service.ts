@@ -23,7 +23,6 @@ export default class ConfigService implements ConfigInterface {
     configSchema.validate({allowed: 'strict', output: this.logger.info});
 
     this.config = configSchema.getProperties();
-    this.logger.info('.env file was found and successfully parsed.');
   }
 
   public get<T extends keyof ConfigSchema>(key: T) {
