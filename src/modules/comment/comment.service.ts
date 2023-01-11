@@ -30,7 +30,8 @@ export default class CommentService implements CommentServiceInterface {
 
   public async findByMovieId(movieId: string, limit?: number): Promise<DocumentType<CommentEntity>[] | null> {
     const commentLimit = limit ?? DEFAULT_COMMENT_COUNT;
-    return this.commentModel.find({movieId}).sort({publicationDate: SortType.Down}).limit(commentLimit).populate('userId');
+
+    return this.commentModel.find({movieId: movieId}).sort({createdAt: SortType.Down}).limit(commentLimit).populate('userId');
   }
 
   public async deleteAllByMovieId(movieId: string): Promise<number | null> {

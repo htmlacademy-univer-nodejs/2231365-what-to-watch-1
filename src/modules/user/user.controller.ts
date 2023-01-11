@@ -12,7 +12,6 @@ import {createJWT, fillDTO} from '../../utils/common.js';
 import LoginUserDto from './dto/login-user.dto.js';
 import {StatusCodes} from 'http-status-codes';
 import HttpError from '../../common/errors/http-error.js';
-import MovieResponse from '../movie/response/movie.response.js';
 import {ValidateDtoMiddleware} from '../../common/middlewares/validate-dto.middleware.js';
 import {ValidateObjectIdMiddleware} from '../../common/middlewares/validate-objectid.middleware.js';
 import {DocumentExistsMiddleware} from '../../common/middlewares/document-exists.middleware.js';
@@ -23,6 +22,9 @@ import * as core from 'express-serve-static-core';
 import {JWT_ALGORITM} from './user.constant.js';
 import LoggedUserResponse from './response/logged-user.response.js';
 import {PrivateRouteMiddleware} from '../../common/middlewares/private-route.middleware.js';
+import UploadAvatarResponse from './response/upload-avatar.response.js';
+import {NonAuthorizedRouteMiddleware} from '../../common/middlewares/non-authorized-route.middleware.js';
+import ShortMovieResponse from '../movie/response/short-movie.response.js';
 
 type ParamsUpdateUser = {
   userId: string;
@@ -34,9 +36,9 @@ export default class UserController extends Controller {
     @inject(Component.LoggerInterface) logger: LoggerInterface,
     @inject(Component.UserServiceInterface) private readonly userService: UserServiceInterface,
     @inject(Component.MovieServiceInterface) private readonly movieService: MovieServiceInterface,
-    @inject(Component.ConfigInterface) private readonly configService: ConfigInterface
+    @inject(Component.ConfigInterface) configService: ConfigInterface
   ) {
-    super(logger);
+    super(logger, configService);
 
     this.logger.info('Register routes for UserController…');
 
@@ -45,6 +47,7 @@ export default class UserController extends Controller {
       method: HttpMethod.POST,
       handler: this.create,
       middlewares: [
+        new NonAuthorizedRouteMiddleware(),
         new ValidateDtoMiddleware(CreateUserDto)
       ]
     });
@@ -134,12 +137,12 @@ export default class UserController extends Controller {
 
     const token = await createJWT(JWT_ALGORITM, this.configService.get('JWT_SECRET'), {id: user.id, email: user.email});
 
-    this.ok(res, fillDTO(LoggedUserResponse, {email: user.email, token}));
+    this.ok(res, {...fillDTO(LoggedUserResponse, user), token});
   }
 
   public async getState(req: Request, res: Response): Promise<void> {
     if (!req.user) {
-      this.noContent(res, {message: 'Unauthorized'});
+      throw new HttpError(StatusCodes.UNAUTHORIZED, 'Unauthorized', 'UserController');
     }
     const user = await this.userService.findByEmail(req.user.email);
     this.ok(res, fillDTO(LoggedUserResponse, user));
@@ -156,7 +159,7 @@ export default class UserController extends Controller {
   public async showInList(req: Request, _res: Response): Promise<void> {
     const {user} = req;
     const result = await this.userService.findInList(user.id);
-    this.ok(_res, fillDTO(MovieResponse, result));
+    this.ok(_res, fillDTO(ShortMovieResponse, result));
   }
 
   public async addInList(req: Request<object, object, {movieId: string}>, res: Response): Promise<void> {
@@ -172,7 +175,9 @@ export default class UserController extends Controller {
   }
 
   public async uploadAvatar(req: Request<core.ParamsDictionary | ParamsUpdateUser>, res: Response) {
-    const user = await this.userService.updateById(req.params.userId, {avatar: req.file?.path});
-    this.created(res, user);
+    const {userId} = req.params;
+    const uploadFile = {avatar: req.file?.filename};
+    await this.userService.updateById(userId, uploadFile);
+    this.created(res, fillDTO(UploadAvatarResponse, uploadFile));
   }
 }

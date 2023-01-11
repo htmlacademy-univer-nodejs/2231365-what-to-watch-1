@@ -13,6 +13,8 @@ import {UserModel} from '../modules/user/user.entity.js';
 import DatabaseService from '../common/database-client/database.service.js';
 import {Movie} from '../types/movie.type.js';
 import {getURI} from '../utils/db.js';
+import {ConfigInterface} from '../common/config/config.interface.js';
+import ConfigService from '../common/config/config.service.js';
 
 const DEFAULT_DB_PORT = 27017;
 const DEFAULT_USER_PASSWORD = '123456';
@@ -23,6 +25,7 @@ export default class ImportCommand implements CliCommandInterface {
   private movieService!: MovieServiceInterface;
   private databaseService!: DatabaseInterface;
   private readonly logger: LoggerInterface;
+  protected readonly configService: ConfigInterface;
   private salt!: string;
 
   constructor() {
@@ -33,6 +36,7 @@ export default class ImportCommand implements CliCommandInterface {
     this.movieService = new MovieService(this.logger, MovieModel);
     this.userService = new UserService(this.logger, UserModel, MovieModel);
     this.databaseService = new DatabaseService(this.logger);
+    this.configService = new ConfigService(this.logger);
   }
 
   private async saveMovie(movie: Movie) {
@@ -59,7 +63,12 @@ export default class ImportCommand implements CliCommandInterface {
   }
 
   public async execute(...parameters:string[]): Promise<void> {
-    const [login, password, host, dbname, salt, filename] = parameters;
+    const login = this.configService.get('DB_USER');
+    const password = this.configService.get('DB_PASSWORD');
+    const host = this.configService.get('HOST');
+    const dbname = this.configService.get('DB_NAME');
+    const salt = this.configService.get('SALT');
+    const [filename] = parameters;
     const uri = getURI(login, password, host, DEFAULT_DB_PORT, dbname);
     this.salt = salt;
 

@@ -1,5 +1,5 @@
 import {Genre} from '../../../types/movie-genre.enum.js';
-import {IsArray, IsInt, Length, IsString} from 'class-validator';
+import {IsArray, IsInt, Length, IsString, ArrayNotEmpty, IsEnum, IsNotEmpty} from 'class-validator';
 
 export default class CreateMovieDto {
   @Length(2, 100, {message: 'Length for name should be from 2 to 100.'})
@@ -11,9 +11,12 @@ export default class CreateMovieDto {
   public description!: string;
 
   @IsArray({message: 'Field genre must be an array.'})
+  @ArrayNotEmpty({message: 'There should be at least 1 genre.'})
+  @IsEnum(Genre, { each: true, message: 'There is one or more invalid genres in array.' })
   public genre!: Genre[];
 
   @IsInt({message: 'Year must be an integer.'})
+  @IsNotEmpty({message: 'Year is required.'})
   public releaseYear!: number;
 
   @IsString({message: 'Preview path is required.'})

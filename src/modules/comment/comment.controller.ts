@@ -12,14 +12,19 @@ import {ValidateDtoMiddleware} from '../../common/middlewares/validate-dto.middl
 import {ValidateObjectIdMiddleware} from '../../common/middlewares/validate-objectid.middleware.js';
 import {Prop} from '../../types/prop.enum.js';
 import {PrivateRouteMiddleware} from '../../common/middlewares/private-route.middleware.js';
+import {ConfigInterface} from '../../common/config/config.interface.js';
+import {DocumentExistsMiddleware} from '../../common/middlewares/document-exists.middleware.js';
+import {MovieServiceInterface} from '../movie/movie-service.interface';
 
 @injectable()
 export default class CommentController extends Controller {
   constructor(
     @inject(Component.LoggerInterface) logger: LoggerInterface,
-    @inject(Component.CommentServiceInterface) private readonly commentService: CommentServiceInterface
+    @inject(Component.CommentServiceInterface) private readonly commentService: CommentServiceInterface,
+    @inject(Component.MovieServiceInterface) private readonly movieService: MovieServiceInterface,
+    @inject(Component.ConfigInterface) configService: ConfigInterface
   ) {
-    super(logger);
+    super(logger, configService);
 
     this.logger.info('Register routes for CommentController…');
 
@@ -30,7 +35,8 @@ export default class CommentController extends Controller {
       middlewares: [
         new PrivateRouteMiddleware(),
         new ValidateDtoMiddleware(CreateCommentDto),
-        new ValidateObjectIdMiddleware('movieId', Prop.Body)
+        new ValidateObjectIdMiddleware('movieId', Prop.Body),
+        new DocumentExistsMiddleware(this.movieService, 'Movide', 'movieId', Prop.Body)
       ]
     });
   }

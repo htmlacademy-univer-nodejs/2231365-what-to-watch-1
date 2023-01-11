@@ -36,12 +36,12 @@ export default class MovieService implements MovieServiceInterface {
 
   public async find(limit?: number): Promise<DocumentType<MovieEntity>[]> {
     const movieLimit = limit ?? DEFAULT_MOVIE_COUNT;
-    return this.movieModel.find().sort({publicationDate: SortType.Down}).limit(movieLimit).populate('userId').exec();
+    return this.movieModel.find().sort({createdAt: SortType.Down}).limit(movieLimit).populate('userId').exec();
   }
 
   public async findByGenre(genre: Genre, limit?: number): Promise<DocumentType<MovieEntity>[]> {
     const movieLimit = limit ?? DEFAULT_MOVIE_COUNT;
-    return this.movieModel.find({genre: genre}).sort({publicationDate: SortType.Down}).limit(movieLimit).populate('userId').exec();
+    return this.movieModel.find({genre: genre}).sort({createdAt: SortType.Down}).limit(movieLimit).populate('userId').exec();
   }
 
   public async findPromo(): Promise<DocumentType<MovieEntity> | null> {

@@ -8,6 +8,7 @@ import {Component} from '../../types/component.types.js';
 import {MovieEntity} from '../movie/movie.entity.js';
 import UpdateUserDto from './dto/update-user.dto.js';
 import LoginUserDto from './dto/login-user.dto.js';
+import {DEFAULT_AVATAR_FILE_NAME} from './user.constant.js';
 
 
 @injectable()
@@ -19,7 +20,7 @@ export default class UserService implements UserServiceInterface {
   ) {}
 
   public async create(dto: CreateUserDto, salt: string): Promise<DocumentType<UserEntity>> {
-    const user = new UserEntity(dto);
+    const user = new UserEntity({...dto, avatar: DEFAULT_AVATAR_FILE_NAME});
     user.setPassword(dto.password, salt);
 
     const result = await this.userModel.create(user);
@@ -44,10 +45,7 @@ export default class UserService implements UserServiceInterface {
 
   public async findInList(userId: string): Promise<DocumentType<MovieEntity>[]> {
     const movieList = await this.userModel.findById(userId).select('inList');
-    if (!movieList) {
-      return [];
-    }
-    return this.movieModel.find({_id: { $in: movieList.inList }});
+    return this.movieModel.find({_id: { $in: movieList?.inList }}).populate('userId');
   }
 
   public async addInList(movieId: string, userId: string): Promise<void | null> {
@@ -59,7 +57,7 @@ export default class UserService implements UserServiceInterface {
   }
 
   public async updateById(userId: string, dto: UpdateUserDto): Promise<DocumentType<UserEntity> | null> {
-    return this.userModel.findByIdAndUpdate(userId, dto, {new: true}).exec();
+    return this.userModel.findByIdAndUpdate(userId, dto, {new: true});
   }
 
   public async exists(documentId: string): Promise<boolean> {
